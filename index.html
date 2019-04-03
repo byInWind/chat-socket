@@ -1,296 +1,37 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>聊天</title>
-    <meta name="viewport"
-          content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,minimal-ui,viewport-fit=cover">
-    <script src="/jquery-1.11.0.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <style type="text/css">
-        * {
-            margin: 0;
-            padding: 0;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        .list {
-            padding-left: 8px;
-            margin-bottom: 20px;
-            max-width: 80%;
-            min-width: 48%;
-        }
-
-        .list .user {
-            display: inline-block;
-            width: 36px;
-            height: 36px;
-            line-height: 36px;
-            background-color: royalblue;
-            border-radius: 50px;
-            text-align: center;
-            position: absolute;
-        }
-
-        .list p {
-            margin-left: 46px;
-            background-color: #EBEBEB;
-            border-radius: 10px;
-            padding: 12px;
-            text-align: left;
-            color: #2B2920;
-            display: inline-block;
-        }
-
-        .list-right {
-            color: white;
-            min-width: 36%;
-            margin: 0 3% 20px 30%;
-            text-align: right;
-        }
-
-        .list-right .user {
-            display: inline-block;
-            width: 36px;
-            height: 36px;
-            line-height: 36px;
-            float: right;
-            margin-left: 10px;
-            background-color: royalblue;
-            border-radius: 50px;
-            text-align: center;
-        }
-
-        .list-right p {
-            color: #2B2920;
-            border-radius: 10px 10px 0 0;
-            padding: 10px;
-            text-align: left;
-            background-color: #FFCF2B;
-        }
-
-        .word_warp {
-            word-wrap: break-word;
-            word-break: normal;
-            max-width: 100%;
-        }
-
-        footer a {
-            height: 38px;
-            line-height: 38px;
-            color: #2B2920;
-            background-color: #FFCF2B;
-            width: 90%;
-            display: block;
-            border-radius: 30px;
-            font-size: 14px;
-            margin: 6px auto;
-            text-align: center;
-        }
-
-        .time {
-            color: #BABABA;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        #main {
-            display: none;
-            padding: 10px 0 60px;
-        }
-
-        footer {
-            position: fixed;
-            bottom: 0px;
-            width: 100%;
-            background: white;
-            border-top: 1px solid gainsboro;
-            padding-bottom: constant(safe-area-inset-bottom);
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        p a {
-            color: white;
-        }
-
-        .text_de {
-            text-decoration: underline;
-        }
-
-        form input {
-            border: 0;
-            padding: 10px;
-            width: 89%;
-            margin-right: .5%;
-        }
-
-        form button {
-            width: 9%;
-            background: rgb(130, 224, 255);
-            border: none;
-            padding: 10px;
-        }
-
-        .list-right .no-bottom {
-            border-radius: 10px;
-            padding: 10px;
-            text-align: left;
-            display: inline-block;
-            background-color: #FFCF2B;
-        }
-
-        .box {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-        }
-
-        .box input {
-            border: 1px solid;
-            width: 200px;
-            display: block;
-            margin: 0 auto;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <title>Socket.IO Chat Example</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<section class="box">
-    <form class="form1" action="">
-        <input type="text" id="name" required placeholder="请输入你的昵称">
-        <input type="submit" value="确定">
-    </form>
-</section>
-<div id="main">
-    <div class="list">
-        <div class="user"></div>
-        <p class="word_warp session">你的反馈</p>
-    </div>
-    <div class="list-right">
-        <div class="user"></div>
-        <p class="word_warp session no-bottom">dd</p>
-    </div>
-    <footer>
-        <form class="form2" action="">
-            <input id="m" autocomplete="off"/>
-            <button>Send</button>
-        </form>
-    </footer>
-</div>
-<script>
-    $(function () {
-        var name;
-        //名字截取后俩字
-        $('.form1').submit(function (e) {
-            e.preventDefault(); // prevents page reloading
-            name = $('#name').val().trim();
-            $('.box').hide();
-            $("#main").show();
-            $('#name').val('');
-            socket.emit('user name', {name: name})
-            return false;
-        });
-        var socket = io();
-        $('.form2').submit(function (e) {
-            e.preventDefault(); // prevents page reloading
-            //发送消息时带上用户标识来识别用户
-            socket.emit('chat message', {
-                name: name,
-                msg: $('#m').val()
-            });
-            $('#m').val('');
-            return false;
-        });
-        ///正在输入
-        $('#m').on('input',function () {
-            console.log('111111')
-            socket.emit('is typing');
-        });
-        socket.on('is typing',function () {
-           console.log('正在输入......')
-        });
-        socket.on('chat message', function (msg) {
-            console.log(msg);
-            if (msg.type == '1') {
-                $("#main").append('<p>' + msg.msg + '</p>');
-                return
-            }
-            if (msg.name == name) {
-                $("#main").append('<div class="list-right">' +
-                    '<div class="user">' + msg.name.slice(-2) + '</div>' +
-                    '<p class="word_warp session no-bottom">' + msg.msg + '</p>' +
-                    '</div>')
-            } else {
-                $("#main").append('<div class="list">' +
-                    '<div class="user">' + msg.name.slice(-2) + '</div>' +
-                    '<p class="word_warp session">' + msg.msg + '</p>' +
-                    '</div>')
-            }
-        });
+<ul class="pages">
+    <li class="chat page">
+        <div class="chatArea">
+            <div class="messages">
+                <div id="main">
+                    <footer>
+                        <form class="form2" action="">
+                            <input id="m" autocomplete="off"/>
+                            <button>Send</button>
+                        </form>
+                    </footer>
+                </div>
+            </div>
+        </div>
+        <input class="inputMessage" placeholder="请输入(300字以内)" maxlength="300"/>
+    </li>
+    <li class="login page">
+        <div class="form">
+            <h3 class="title">What's your nickname?</h3>
+            <input class="usernameInput" type="text" maxlength="14"/>
+        </div>
+    </li>
+</ul>
 
-        //正则匹配网址，转为可点击的链接
-        String.prototype.httpHtml = function () {
-            var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
-            return this.replace(reg, '<a class="text_de" href="$1$2">网页链接</a>');
-        };
-        jQuery.each($('.session'), function (i, file) {
-            $(this).html($(this).html().toString().httpHtml());
-        });
-
-
-        var flag = true;
-        $('.solve .to-left').on('click', function () {
-            if (flag) {
-                flag = false;
-                $.ajax({
-                    url: "/case/isClose",
-                    type: "post",
-                    success: function (data) {
-                        if (data.status == 200) {
-                            location.href = '/case/session?isSolve=true';
-                        }
-                        if (data.status == 200698) {
-                            location.href = '/case/session';
-                        }
-                    }
-                });
-            }
-        });
-        $('.solve .to-right').on('click', function () {
-            if (flag) {
-                flag = false;
-                location.href = '/case/message/input';
-            }
-        });
-        //循环判断时间  true false两种状态不连续显示时间
-        var sortTime = function () {
-            var lastData = null;
-            $('.time').each(function (i, e) {
-                var $e = $(e);
-                var data = $e.attr('data-me');  //true  or  false
-                var data2 = $e.attr('data-firstnote');
-                if (data2 == 'true') {
-                    $e.show();
-                } else if (lastData == null || lastData != data) {
-                    $e.show();
-                } else {
-                    $e.hide();
-                }
-
-
-                lastData = data;
-            });
-        };
-
-        sortTime();
-        //HTML代码打开或刷新网页后自动滚动到底部
-        window.scrollTo(0, document.body.scrollHeight);
-
-    })
-</script>
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/main.js"></script>
 </body>
 </html>
