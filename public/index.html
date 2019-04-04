@@ -6,10 +6,11 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<ul class="pages">
-    <li class="chat page">
+<section class="pages">
+    <div class="chat page">
         <div class="chatArea">
             <div class="messages">
+                <p class="log" style="display: block;">Welcome to Socket.IO Chat – </p>
                 <div id="main">
                     <footer>
                         <form class="form2" action="">
@@ -21,14 +22,14 @@
             </div>
         </div>
         <input class="inputMessage" placeholder="请输入(300字以内)" maxlength="300"/>
-    </li>
-    <li class="login page">
+    </div>
+    <div class="login page">
         <div class="form">
             <h3 class="title">What's your nickname?</h3>
             <input class="usernameInput" type="text" maxlength="14"/>
         </div>
-    </li>
-</ul>
+    </div>
+</section>
 
 <script src="/jquery-1.11.0.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>

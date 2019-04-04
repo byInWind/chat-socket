@@ -22,12 +22,7 @@ $(function () {
     //添加参与者消息
     const addParticipantsMessage = (data) => {
         var message = '';
-        //numUsers 聊天人数
-        // if (data.numUsers === 1) {
-        //     message += "当前群聊人数为1";
-        // } else {
         message += "当前群聊人数为 " + data.numUsers;
-        // }
         log(message);
     }
 
@@ -66,13 +61,13 @@ $(function () {
 
     // Log a message
     const log = (message, options) => {
-        var $el = $('<li>').addClass('log').text(message);
+        var $el = $('<p>').addClass('log').text(message);
         addMessageElement($el, options);
     }
 
-    // 将聊天消息添加到消息列表
+    // 将聊天消息和记录添加到消息列表
     const addChatMessage = (data, options) => {
-        // 如果有“xxx正在输入”，不要淡入消息
+        // 如果有“xxx正在输入”，不要插入消息
         var $typingMessages = getTypingMessages(data);
         options = options || {};
         if ($typingMessages.length !== 0) {
@@ -174,7 +169,7 @@ $(function () {
 
     // 获取用户的“x正在键入”消息
     const getTypingMessages = (data) => {
-        return $('.typing.message').filter(function (i) {
+        return $('.list.typing').filter(function (i) {
             return $(this).data('username') === data.username;
         });
     }
@@ -209,21 +204,11 @@ $(function () {
         $currentInput.focus();
     });
 
-    // 点击消息输入的边框时聚焦
-    // $inputMessage.click(() => {
-    //     $inputMessage.focus();
-    // });
-
     // Socket events
 
     // 每当服务器 emits'login'时，记录登录消息
     socket.on('login', (data) => {
         connected = true;
-        // 显示欢迎信息
-        var message = "Welcome to Socket.IO Chat – ";
-        log(message, {
-            prepend: true
-        });
         addParticipantsMessage(data);
     });
 
@@ -247,7 +232,6 @@ $(function () {
 
     // Whenever the server emits 'typing', show the typing message
     socket.on('typing', (data) => {
-        console.log(data)
         addChatTyping(data);
     });
 

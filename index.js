@@ -48,6 +48,7 @@ io.on('connection', (socket) => {
 
     // when the client emits 'typing', we broadcast it to others
     socket.on('typing', () => {
+        //如果用io.emit()发消息的人也会收到这个事件
         socket.broadcast.emit('typing', {
             username: socket.username
         });
