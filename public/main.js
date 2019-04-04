@@ -247,6 +247,7 @@ $(function () {
 
     // Whenever the server emits 'typing', show the typing message
     socket.on('typing', (data) => {
+        console.log(data)
         addChatTyping(data);
     });
 
