@@ -1,7 +1,7 @@
 $(function () {
     var FADE_TIME = 150; // 淡入时间 ms
     var TYPING_TIMER_LENGTH = 400; // 键入计时器长度 ms
-
+ 
     // 初始化变量
     var $window = $(window);
     var $usernameInput = $('.usernameInput'); // Input for username
