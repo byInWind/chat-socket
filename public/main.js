@@ -17,6 +17,7 @@ $(function () {
     var typing = false;   //正在输入
     var lastTypingTime;
     var $currentInput = $usernameInput.focus();
+    var timer; // 时间戳
 
     var socket = io();
     //添加参与者消息
@@ -36,24 +37,30 @@ $(function () {
             $chatPage.show();
             $loginPage.off('click');
             $currentInput = $inputMessage.focus();
-
+console.log('add user 了')
             // Tell the server your username
-            socket.emit('add user', username);
+            timer = new Date().getTime();
+            socket.emit('add user',{'username': username, timer: timer});
+            console.log('add user 了')
         }
     }
 
     // 发送消息
     const sendMessage = () => {
+        console.log(4)
         var message = $inputMessage.val();
         //防止将标记注入消息中
         message = cleanInput(message);
         //如果有非空消息和套接字连接
+        console.log(999,message,connected)
         if (message && connected) {
+            console.log(5)
             $inputMessage.val('');
             addChatMessage({
                 username: username,
                 message: message
             });
+
             //告诉服务器执行“new message”并发送一个参数
             socket.emit('new message', message);
         }
@@ -74,23 +81,30 @@ $(function () {
             options.fade = false;
             $typingMessages.remove();
         }
-        /*
-        * <div class="list-right">
-                        <div class="user"></div>
-                        <p class="word_warp session no-bottom">dd</p>
-                    </div>
-        * */
+        console.log(6)
+        /*以登录用户名与data返回的用户名相同做判断，这里存在注册昵称相同触发的问题
+         改 发送的消息里加上是否是自己的变量 _self，值为true false */
+        if (timer === data.timer) {
+            console.log(7)
+            // 自己的消息
+            var $usernameDivSelf =
+                $('<div class="list-right"/>').html('<div class="user">' + data.username + '</div>' +
+                    ' <p class="word_warp session right_self">' + data.message + '</p>');
 
-        var $usernameDiv =
-        $('<div class="list"/>').html(' <div class="user">' + data.username + '</div>' +
-            ' <p class="word_warp session">' + data.message + '</p>');
-        var typingClass = data.typing ? 'typing' : '';
-        var $messageDiv = $('<div class="list"/>')
-            .data('username', data.username)
-            .addClass(typingClass)
-            .append($usernameDiv);
+            addMessageElement($usernameDivSelf, options);
+        } else {
+            // 其它人的消息
+            var $usernameDivOther =
+                $('<div class="list"/>').html('<div class="user">' + data.username + '</div>' +
+                    ' <p class="word_warp session">' + data.message + '</p>');
 
-        addMessageElement($messageDiv, options);
+            var typingClass = data.typing ? 'typing' : '';
+            var $messageDiv = $('<div class="list"/>')
+                .data('username', data.username)
+                .addClass(typingClass)
+                .append($usernameDivOther);
+            addMessageElement($messageDiv, options);
+        }
     }
 
     // 添加正在输入消息
@@ -104,7 +118,6 @@ $(function () {
     const removeChatTyping = (data) => {
         getTypingMessages(data).fadeOut(function () {
             $(this).remove();
-            console.log(221)
         });
     }
 
@@ -183,11 +196,14 @@ $(function () {
         }
         //点击 Enter键时
         if (event.which === 13) {
+            console.log(1)
             if (username) {
+                console.log(2,username)
                 sendMessage();
                 socket.emit('stop typing');
                 typing = false;
             } else {
+                console.log(3)
                 setUsername();
             }
         }
@@ -208,12 +224,15 @@ $(function () {
 
     // 每当服务器 emits'login'时，记录登录消息
     socket.on('login', (data) => {
+        console.log('login ssss')
         connected = true;
+        timer = data.timer;
         addParticipantsMessage(data);
     });
 
     // Whenever the server emits 'new message', update the chat body
     socket.on('new message', (data) => {
+        console.log('new message new message')
         addChatMessage(data);
     });
 
@@ -247,7 +266,7 @@ $(function () {
     socket.on('reconnect', () => {
         log('您已重新连接成功');
         if (username) {
-            socket.emit('add user', username);
+            socket.emit('add user',{'username': username});
         }
     });
 
